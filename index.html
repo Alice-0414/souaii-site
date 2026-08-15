@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>A千磕点淘汰赛</title>
+    <style>
+        /* ============================================================
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #F8CDED;  
+            color: #3d3a40;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        /* ============================================================
+           1.  主
+           ============================================================ */
+        .wrap {
+            width: 100%;
+            max-width: 560px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 32px;
+            padding: 24px 20px 32px;
+            box-shadow: 0 16px 48px rgba(161, 152, 168, 0.2);
+            border: 1px solid #d9ced6;
+        }
+
+        /* ============================================================
+           2.  头部
+           ============================================================ */
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #A198A8;
+            letter-spacing: 2px;
+            text-shadow: 0 0 12px rgba(161, 152, 168, 0.15);
+        }
+        .header .sub {
+            font-size: 12px;
+            color: #b5aab5;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+        .header .sub span {
+            color: #A198A8;
+            font-weight: 600;
+        }
+
+        /* ============================================================
+           3.  进度条
+           ============================================================ */
+        .progress-wrap {
+            margin: 12px 0 8px;
+            position: relative;
+        }
+        .progress-bar {
+            height: 6px;
+            background: #e8e0e8;
+            border-radius: 4px;
+            overflow: visible;   
+            position: relative;
+            border: 1px solid #d9ced6;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #A198A8, #d4b8d4);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 4px;
+            position: relative;
+        }
+        /* 进度条末端星星 */
+        .star-marker {
+            position: absolute;
+            top: 50%;
+            left: 0%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            line-height: 1;
+            color: #222;
+            transition: left 0.4s ease;
+            pointer-events: none;
+            text-shadow: 0 0 4px rgba(255,255,255,0.8);
+            z-index: 2;
+        }
+        .progress-text {
+            font-size: 12px;
+            color: #b5aab5;
+            text-align: center;
+            margin-top: 6px;
+            letter-spacing: 0.3px;
+        }
+        .progress-text strong {
+            color: #A198A8;
+        }
+
+        /* ============================================================
+           4.  轮次标识 & 轮空
+           ============================================================ */
+        .round-badge-wrap {
+            text-align: center;
+            margin: 8px 0 10px;
+        }
+        .round-badge {
+            display: inline-block;
+            padding: 4px 18px;
+            background: #f5edf5;
+            color: #A198A8;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid #d9ced6;
+            letter-spacing: 0.5px;
+        }
+        .round-badge.final {
+            background: #f8e6f0;
+            color: #8a7a8a;
+            border-color: #c4b0c0;
+        }
+
+        .bye-banner {
+            background: #f5edf5;
+            border: 1px solid #d9ced6;
+            border-radius: 10px;
+            padding: 8px 14px;
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #8a7a8a;
+        }
+        .bye-banner b {
+            color: #A198A8;
+        }
+
+        /* ====================================================== */
+        .pk-arena {
+            margin: 6px 0 16px;
+        }
+
+        .pk-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            max-width: 100%;
+        }
+
+        .pk-card {
+            background: #faf8fa;
+            border: 2px solid #d9ced6;
+            border-radius: 16px;
+            padding: 28px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            user-select: none;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .pk-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 100%, rgba(161, 152, 168, 0.05), transparent 70%);
+            pointer-events: none;
+        }
+
+        .pk-card:hover {
+            border-color: #b5a8b5;
+            background: #f5edf5;
+            transform: translateY(-1px);
+        }
+        .pk-card:active {
+            border-color: #A198A8;
+            transform: scale(0.97);
+            background: #f0e8f0;
+        }
+
+        .pk-card.chosen {
+            border-color: #8cb88c;
+            background: #f2faf2;
+            box-shadow: 0 0 20px rgba(140, 184, 140, 0.15);
+            transform: scale(1.02);
+        }
+        .pk-card.chosen::after {
+            background: radial-gradient(circle at 50% 100%, rgba(140, 184, 140, 0.06), transparent 70%);
+        }
+
+        .pk-card.rejected {
+            opacity: 0.3;
+            transform: scale(0.94);
+            border-color: #d9ced6;
+            filter: grayscale(0.5);
+            pointer-events: none;
+        }
+
+        .pk-card .name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #3d3a40;
+            margin-bottom: 6px;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        .pk-card.chosen .name {
+            color: #5a8a5a;
+        }
+        .pk-card .vs-label {
+            font-size: 12px;
+            color: #b5aab5;
+            letter-spacing: 0.5px;
+            font-weight: 400;
+        }
+        .pk-card.chosen .vs-label {
+            color: #7aaa7a;
+        }
+
+        /* ============================================================
+           6.  结束页
+           ============================================================ */
+        .result-screen {
+            text-align: center;
+            padding: 10px 0 6px;
+        }
+        .result-screen .trophy {
+            font-size: 64px;
+            margin-bottom: 2px;
+            filter: drop-shadow(0 0 20px rgba(161, 152, 168, 0.2));
+        }
+        .result-screen .champ-name {
+            font-size: 30px;
+            font-weight: 700;
+            color: #A198A8;
+            text-shadow: 0 0 20px rgba(161, 152, 168, 0.15);
+        }
+        .result-screen .runner-up {
+            font-size: 16px;
+            color: #b5aab5;
+            margin-top: 4px;
+        }
+        .result-screen .runner-up span {
+            color: #8a7a8a;
+        }
+        .result-screen .sub-text {
+            font-size: 13px;
+            color: #b5aab5;
+            margin-top: 10px;
+        }
+
+        /* ============================================================
+           7.  决赛路径图
+           ============================================================ */
+        .road-section {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 2px solid #ece4ec;
+        }
+        .road-section h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #A198A8;
+            text-align: center;
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+        }
+
+        .road-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 14px;
+            padding: 6px 2px 14px 2px;
+            -webkit-overflow-scrolling: touch;
+            align-items: flex-start;
+            scrollbar-width: thin;
+            scrollbar-color: #d9ced6 #f5edf5;
+        }
+        .road-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+        .road-scroll::-webkit-scrollbar-track {
+            background: #f5edf5;
+            border-radius: 4px;
+        }
+        .road-scroll::-webkit-scrollbar-thumb {
+            background: #d9ced6;
+            border-radius: 4px;
+        }
+        .road-scroll::-webkit-scrollbar-thumb:hover {
+            background: #b5a8b5;
+        }
+
+        .road-col {
+            flex: 0 0 140px;
+            min-width: 120px;
+        }
+        .road-col .col-header {
+            font-size: 11px;
+            font-weight: 700;
+            color: #A198A8;
+            text-align: center;
+            margin-bottom: 8px;
+            background: #f5edf5;
+            border-radius: 20px;
+            padding: 4px 0;
+            letter-spacing: 0.5px;
+            border: 1px solid #d9ced6;
+        }
+        .road-col .col-header.final-header {
+            background: #f8e6f0;
+            color: #8a7a8a;
+            border-color: #c4b0c0;
+        }
+
+        .road-match-card {
+            background: #faf8fa;
+            border-radius: 10px;
+            padding: 8px 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ece4ec;
+            font-size: 13px;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .road-match-card .winner {
+            font-weight: 600;
+            color: #3d3a40;
+        }
+        .road-match-card .loser {
+            color: #b5aab5;
+            text-decoration: line-through;
+        }
+        .road-match-card .vs-symbol {
+            color: #d9ced6;
+            font-size: 10px;
+            margin: 0 2px;
+        }
+        .road-match-card .final-tag {
+            display: block;
+            font-size: 10px;
+            color: #8a7a8a;
+            background: #f8e6f0;
+            border-radius: 30px;
+            padding: 0 8px;
+            margin-top: 4px;
+            font-weight: 700;
+            border: 1px solid #c4b0c0;
+        }
+
+        .road-empty {
+            text-align: center;
+            color: #b5aab5;
+            font-size: 14px;
+            padding: 12px 0;
+        }
+
+        /* ============================================================
+           8.  视频链接列表
+           ============================================================ */
+        .video-links-section {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 2px solid #ece4ec;
+            text-align: left;
+        }
+        .video-links-section h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #A198A8;
+            text-align: center;
+            margin-bottom: 14px;
+            letter-spacing: 1px;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .video-item {
+            background: #faf8fa;
+            border-radius: 10px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #ece4ec;
+            font-size: 14px;
+            transition: 0.15s;
+        }
+        .video-item:hover {
+            border-color: #d9ced6;
+        }
+        .video-item .vname {
+            font-weight: 500;
+            color: #3d3a40;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px;
+        }
+        .video-item .vlink {
+            background: #A198A8;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            padding: 2px 16px;
+            font-size: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.2s;
+            line-height: 26px;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+        .video-item .vlink:hover {
+            background: #b5a8b5;
+            box-shadow: 0 0 16px rgba(161, 152, 168, 0.2);
+        }
+        .video-item .vlink.nolink {
+            background: #d9ced6;
+            cursor: default;
+            color: #b5aab5;
+        }
+        .video-item .vlink.nolink:hover {
+            background: #d9ced6;
+            box-shadow: none;
+        }
+
+        /* ============================================================
+           9.  按钮
+           ============================================================ */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: transparent;
+            border: 1.5px solid #d9ced6;
+            padding: 8px 30px;
+            border-radius: 40px;
+            font-size: 14px;
+            color: #b5aab5;
+            cursor: pointer;
+            transition: 0.25s;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        .btn:hover {
+            border-color: #A198A8;
+            color: #3d3a40;
+            background: #f5edf5;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn .icon {
+            margin-right: 6px;
+        }
+
+        /* ============================================================
+           10. 隐藏
+           ============================================================ */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ============================================================
+           11. 响应式
+           ============================================================ */
+        @media (max-width: 480px) {
+            .wrap {
+                padding: 16px 14px 24px;
+                border-radius: 24px;
+            }
+            .header h1 {
+                font-size: 19px;
+            }
+            .pk-card {
+                padding: 20px 8px;
+                min-height: 90px;
+            }
+            .pk-card .name {
+                font-size: 15px;
+            }
+            .pk-row {
+                gap: 10px;
+            }
+            .result-screen .champ-name {
+                font-size: 24px;
+            }
+            .road-col {
+                flex: 0 0 115px;
+                min-width: 105的心跳px;
+            }
+            .road-match-card {
+                font-size: 12px;
+                padding: 6px 8px;
+            }
+            .video-item .vname {
+                max-width: 100px;
+            }
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 600px) {
+            .video-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .video-item .vname {
+                max-width: 160px;
+            }
+        }
+
+        /* ============================================================
+           12. 滚动条（全局）
+           ============================================================ */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5edf5;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d9ced6;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b5a8b5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrap" id="app">
+
+        <!-- ===== 头部 ===== -->
+        <div class="header">
+            <h1>♠︎A千磕点淘汰赛★</h1>
+            <div class="sub">制作：<span>棍妳妹大王</span></div>
+        </div>
+
+        <!-- ===== 进度条（带星星） ===== -->
+        <div class="progress-wrap">
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+                <span class="star-marker" id="starMarker">★</span>
+            </div>
+            <div class="progress-text" id="progressText">已完成<strong>0</strong>/<span id="totalMatchesText">0</span>场</div>
+        </div>
+
+        <!-- ===== 主区域 ===== -->
+        <div id="mainArea">
+
+            <!-- 轮次标识 -->
+            <div class="round-badge-wrap">
+                <span class="round-badge" id="roundBadge">第 1 轮</span>
+            </div>
+
+            <!-- 轮空提示 -->
+            <div class="bye-banner hidden" id="byeBanner">
+                ⭐ <b id="byeName">—</b> 本轮轮空，直接晋级！
+            </div>
+
+            <!-- PK 区 -->
+            <div class="pk-arena" id="pkArena">
+                <div class="pk-row" id="pkRow">
+                    <div class="pk-card" id="cardA" data-idx="0">
+                        <div class="name" id="nameA">—</div>
+                        <div class="vs-label">我喜欢这个</div>
+                    </div>
+                    <div class="pk-card" id="cardB" data-idx="1">
+                        <div class="name" id="nameB">—</div>
+                        <div class="vs-label">我喜欢这个</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 结束页 -->
+            <div class="result-screen hidden" id="resultScreen">
+                <div class="trophy">🏆</div>
+                <div class="champ-name" id="champName">—</div>
+                <div class="runner-up">🥈 亚军：<span id="runnerUpName">—</span></div>
+                <div class="sub-text">🎉 恭喜成为你最辣舞那个磕点！</div>
+
+                <!-- 决赛路径图 -->
+                <div class="road-section" id="roadSection">
+                    <h3>📊 路径</h3>
+                    <div class="road-scroll" id="roadMap"></div>
+                </div>
+
+                <!-- 视频链接列表 -->
+                <div class="video-links-section" id="videoLinksSection">
+                    <h3>📺 虎牙伯千你怎么能留下这样的证据</h3>
+                    <div class="video-grid" id="videoGrid"></div>
+                </div>
+            </div>
+
+            <!-- 按钮 -->
+            <div class="btn-group">
+                <button class="btn" id="resetBtn"><span class="icon">⟳</span> 重新开始</button>
+            </div>
+
+        </div><!-- /mainArea -->
+
+    </div><!-- /wrap -->
+
+    <script>
+        (function() {
+
+            // ============================================================
+            //  1. 磕点列表
+            // ============================================================
+            const ALL_ITEMS = [
+                '105的心跳',
+                '脸好圆啊',
+                '何谈爱啊',
+                '这不是CC大明星吗',
+                '爱丽啊爱丽',
+                '晴天娃娃',
+                '最欣赏的屠皇是',
+                '屠榜双子星',
+                '两次放地窖',
+                '单排战士',
+                '世纪同框',
+                '鹅鸭杀',
+                '偷看丽直播',
+                '下午好加油',
+                '恨也是可以的',
+                '不可说大人',
+                '排位错过',
+                '口癖',
+                '屠皇四排',
+                '我还没注意'
+            ];
+
+            // ============================================================
+            //  2. 视频链接映射
+            // ============================================================
+            const VIDEO_LINKS = {
+                '105的心跳': 'https://www.bilibili.com/video/BV1uM9SYFEEt/',
+                '脸好圆啊': 'https://www.bilibili.com/video/BV124421Z74W/',
+                '何谈爱啊': 'https://www.bilibili.com/video/BV18vZZBoEGL/',
+                '这不是CC大明星吗': 'https://www.bilibili.com/video/BV1Hf88zJE2a/',
+                '爱丽啊爱丽': 'https://www.bilibili.com/video/BV1LSnZzoEia/',
+                '晴天娃娃': 'https://www.bilibili.com/video/BV1ShUkYaEc7/',
+                '最欣赏的屠皇是': null,
+                '屠榜双子星': 'https://www.bilibili.com/video/BV1hHR9BgEQZ/',
+                '两次放地窖': 'https://www.bilibili.com/video/BV1hHR9BgEQZ/',
+                '单排战士': 'https://www.bilibili.com/video/BV1wh4y1m7b4/',
+                '世纪同框': null,
+                '鹅鸭杀': 'https://www.bilibili.com/video/BV1s3411Z7X7/',
+                '偷看丽直播': 'https://www.bilibili.com/video/BV1H3tozJENJ/',
+                '下午好加油': 'https://www.bilibili.com/video/BV1wr421M7Gn/',
+                '恨也是可以的': 'https://www.bilibili.com/video/BV1vhVszLEzh/',
+                '不可说大人': 'https://www.bilibili.com/video/BV1bqgezHEm1/',
+                '排位错过': 'https://www.bilibili.com/video/BV1FHW1zuEt6/',
+                '口癖': 'https://www.bilibili.com/video/BV18nMp6iEXy/',
+                '屠皇四排': 'https://www.bilibili.com/video/BV1134y1S71c/',
+                '我还没注意': 'https://www.bilibili.com/video/BV1KTKezMEfD/'
+            };
+
+            // ============================================================
+            //  3. 状态
+            // ============================================================
+            let pool = [];
+            let round = 0;
+            let totalMatches = 0;
+            let matchesDone = 0;
+            let isVoting = false;
+
+            let historyRounds = [];
+            let currentRoundPairs = [];
+
+            let champ = null;
+            let runnerUp = '—';
+
+            // ============================================================
+            //  4. DOM 引用
+            // ============================================================
+            const $ = id => document.getElementById(id);
+            const progressFill = $('progressFill');
+            const starMarker = $('starMarker');
+            const progressText = $('progressText');
+            const totalMatchesText = $('totalMatchesText');
+            const roundBadge = $('roundBadge');
+            const byeBanner = $('byeBanner');
+            const byeName = $('byeName');
+            const pkArena = $('pkArena');
+            const cardA = $('cardA');
+            const cardB = $('cardB');
+            const nameA = $('nameA');
+            const nameB = $('nameB');
+            const resultScreen = $('resultScreen');
+            const champName = $('champName');
+            const runnerUpName = $('runnerUpName');
+            const roadMap = $('roadMap');
+            const videoGrid = $('videoGrid');
+            const resetBtn = $('resetBtn');
+
+            // ============================================================
+            //  5. 工具
+            // ============================================================
+            function shuffle(arr) {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
+            // ============================================================
+            //  6. 核心逻辑
+            // ============================================================
+
+            function initTournament() {
+                const shuffled = shuffle([...ALL_ITEMS]);
+                pool = shuffled.map(name => ({ name, road: [] }));
+                round = 0;
+                matchesDone = 0;
+                isVoting = false;
+                champ = null;
+                runnerUp = '—';
+                historyRounds = [];
+                currentRoundPairs = [];
+
+                resultScreen.classList.add('hidden');
+                pkArena.classList.remove('hidden');
+                startRound();
+            }
+
+            function startRound() {
+                if (pool.length <= 1) {
+                    if (pool.length === 1) {
+                        champ = pool[0];
+                        const lastRound = historyRounds[historyRounds.length - 1];
+                        if (lastRound && lastRound.length > 0) {
+                            runnerUp = lastRound[lastRound.length - 1].loser;
+                        } else {
+                            runnerUp = '无';
+                        }
+                    } else {
+                        champ = { name: '无', road: [] };
+                        runnerUp = '无';
+                    }
+                    showResult();
+                    return;
+                }
+
+                round++;
+                pool = shuffle(pool);
+                const total = pool.length;
+                const hasBye = (total % 2 === 1);
+                const pairCount = Math.floor(total / 2);
+                totalMatches = pairCount;
+                matchesDone = 0;
+                currentRoundPairs = [];
+
+                const roundLabel = round === 1 ? '第 1 轮' :
+                    round === 2 ? '第 2 轮' :
+                    round === 3 ? '第 3 轮' :
+                    round === 4 ? '第 4 轮' :
+                    round === 5 ? '第 5 轮' :
+                    `第 ${round} 轮`;
+                roundBadge.textContent = roundLabel + ' · 剩余 ' + total + ' 个';
+
+                if (hasBye) {
+                    const byeItem = pool[total - 1];
+                    byeName.textContent = byeItem.name;
+                    byeBanner.classList.remove('hidden');
+                } else {
+                    byeBanner.classList.add('hidden');
+                }
+
+                updateProgress();
+                showNextMatch();
+            }
+
+            function showNextMatch() {
+                if (matchesDone >= totalMatches) {
+                    if (currentRoundPairs.length > 0) {
+                        historyRounds.push([...currentRoundPairs]);
+                    }
+                    startRound();
+                    return;
+                }
+
+                if (pool.length < 2) {
+                    startRound();
+                    return;
+                }
+
+                const a = pool[0];
+                const b = pool[1];
+                nameA.textContent = a.name;
+                nameB.textContent = b.name;
+                cardA.dataset.idx = 0;
+                cardB.dataset.idx = 1;
+                cardA.classList.remove('chosen', 'rejected');
+                cardB.classList.remove('chosen', 'rejected');
+                isVoting = false;
+                updateProgress();
+            }
+
+            function handleVote(selectedName) {
+                if (isVoting) return;
+                if (pool.length < 2) return;
+                if (matchesDone >= totalMatches) return;
+
+                const a = pool[0];
+                const b = pool[1];
+                let winner, loser;
+                if (selectedName === a.name) {
+                    winner = a;
+                    loser = b;
+                } else if (selectedName === b.name) {
+                    winner = b;
+                    loser = a;
+                } else {
+                    return;
+                }
+
+                isVoting = true;
+
+                const isAWin = (selectedName === a.name);
+                if (isAWin) {
+                    cardA.classList.add('chosen');
+                    cardB.classList.add('rejected');
+                } else {
+                    cardB.classList.add('chosen');
+                    cardA.classList.add('rejected');
+                }
+
+                winner.road.push(loser.name);
+                currentRoundPairs.push({ winner: winner.name, loser: loser.name });
+
+                pool.splice(0, 2);
+                pool.push(winner);
+
+                matchesDone++;
+                updateProgress();
+
+                setTimeout(function() {
+                    if (matchesDone >= totalMatches) {
+                        if (currentRoundPairs.length > 0) {
+                            historyRounds.push([...currentRoundPairs]);
+                        }
+                        startRound();
+                    } else {
+                        showNextMatch();
+                    }
+                }, 400);
+            }
+
+            // ============================================================
+            //  7. 进度条 + 星星
+            // ============================================================
+            function updateProgress() {
+                const total = totalMatches || 1;
+                const done = Math.min(matchesDone, total);
+                const pct = Math.round((done / total) * 100);
+                progressFill.style.width = pct + '%';
+                // 更新星星位置（确保不会超出边界）
+                const starLeft = Math.min(pct, 98);
+                starMarker.style.left = starLeft + '%';
+
+                progressText.innerHTML = '已完成<strong>' + done + '</strong>/<span id="totalMatchesText">' + total +
+                '</span>场';
+                const tmt = document.getElementById('totalMatchesText');
+                if (tmt) tmt.textContent = total;
+            }
+
+            // ============================================================
+            //  8. 结束页
+            // ============================================================
+            function showResult() {
+                pkArena.classList.add('hidden');
+                byeBanner.classList.add('hidden');
+                resultScreen.classList.remove('hidden');
+
+                if (champ) {
+                    champName.textContent = champ.name;
+                    runnerUpName.textContent = runnerUp;
+                }
+
+                progressFill.style.width = '100%';
+                starMarker.style.left = '98%';  // 末端留一点边距
+                progressText.innerHTML = '🏆 已决出冠军！';
+                roundBadge.textContent = '🏆夺冠了！ ';
+                roundBadge.classList.add('final');
+
+                renderBracket();
+                renderVideoLinks();
+            }
+
+            // ---------- 路径图 ----------
+            function renderBracket() {
+                if (historyRounds.length === 0) {
+                    roadMap.innerHTML = '<div class="road-empty">无对决记录</div>';
+                    return;
+                }
+
+                let html = '';
+                historyRounds.forEach((roundPairs, idx) => {
+                    const isFinal = (idx === historyRounds.length - 1);
+                    const headerClass = isFinal ? 'col-header final-header' : 'col-header';
+                    const headerText = isFinal ? '🏆 决赛' : `第 ${idx + 1} 轮`;
+
+                    html += `<div class="road-col">`;
+                    html += `<div class="${headerClass}">${headerText}</div>`;
+
+                    roundPairs.forEach(pair => {
+                        html += `
+                            <div class="road-match-card">
+                                <span class="winner">${pair.winner}</span>
+                                <span class="vs-symbol">⚔</span>
+                                <span class="loser">${pair.loser}</span>
+                                ${isFinal ? '<div class="final-tag">🏆 冠军</div>' : ''}
+                            </div>
+                        `;
+                    });
+
+                    html += `</div>`;
+                });
+
+                roadMap.innerHTML = html;
+            }
+
+            // ---------- 视频链接 ----------
+            function renderVideoLinks() {
+                let html = '';
+                ALL_ITEMS.forEach(name => {
+                    const url = VIDEO_LINKS[name] || null;
+                    const linkHtml = url ?
+                        `<a href="${url}" target="_blank" class="vlink">▶ 观看</a>` :
+                        `<span class="vlink nolink">可怜死了</span>`;
+                    html += `
+                        <div class="video-item">
+                            <span class="vname">${name}</span>
+                            ${linkHtml}
+                        </div>
+                    `;
+                });
+                videoGrid.innerHTML = html;
+            }
+
+            // ============================================================
+            //  9. 事件
+            // ============================================================
+            cardA.addEventListener('click', function() {
+                const name = nameA.textContent;
+                if (name && name !== '—') handleVote(name);
+            });
+            cardB.addEventListener('click', function() {
+                const name = nameB.textContent;
+                if (name && name !== '—') handleVote(name);
+            });
+            resetBtn.addEventListener('click', function() {
+                if (confirm('确定重新开始吗？当前进度将丢失。')) {
+                    initTournament();
+                }
+            });
+
+            // ============================================================
+            //  10. 启动
+            // ============================================================
+            initTournament();
+
+        })();
+    </script>
+
+</body>
+</html>
