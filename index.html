@@ -484,14 +484,73 @@
         }
 
         /* ============================================================
-           10. 隐藏
+           10. 新增：总结文案模块
+           ============================================================ */
+        .summary-section {
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 2px solid #ece4ec;
+        }
+        .summary-section .summary-btn {
+            background: #A198A8;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            letter-spacing: 0.5px;
+        }
+        .summary-section .summary-btn:hover {
+            background: #b5a8b5;
+            box-shadow: 0 0 16px rgba(161, 152, 168, 0.3);
+        }
+        .summary-section .summary-btn:active {
+            transform: scale(0.97);
+        }
+
+        .summary-output {
+            margin-top: 14px;
+            background: #f5edf5;
+            border-radius: 16px;
+            padding: 16px 18px;
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #3d3a40;
+            border: 1px solid #d9ced6;
+            word-break: break-word;
+            display: none;
+        }
+        .summary-output .copy-btn {
+            margin-top: 12px;
+            background: #d9ced6;
+            border: none;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #3d3a40;
+            transition: 0.2s;
+        }
+        .summary-output .copy-btn:hover {
+            background: #c4b0c0;
+        }
+        .summary-output .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ============================================================
+           11. 隐藏
            ============================================================ */
         .hidden {
             display: none !important;
         }
 
         /* ============================================================
-           11. 响应式
+           12. 响应式
            ============================================================ */
         @media (max-width: 480px) {
             .wrap {
@@ -516,7 +575,7 @@
             }
             .road-col {
                 flex: 0 0 115px;
-                min-width: 105的心跳px;
+                min-width: 105px;
             }
             .road-match-card {
                 font-size: 12px;
@@ -527,6 +586,10 @@
             }
             .video-grid {
                 grid-template-columns: 1fr;
+            }
+            .summary-output {
+                font-size: 13px;
+                padding: 14px;
             }
         }
 
@@ -540,7 +603,7 @@
         }
 
         /* ============================================================
-           12. 滚动条（全局）
+           13. 滚动条（全局）
            ============================================================ */
         ::-webkit-scrollbar {
             width: 4px;
@@ -564,7 +627,7 @@
 
         <!-- ===== 头部 ===== -->
         <div class="header">
-            <h1>♠︎A千磕点淘汰赛★</h1>
+            <h1>A千磕点淘汰赛</h1>
             <div class="sub">制作：<span>棍妳妹大王</span></div>
         </div>
 
@@ -621,6 +684,15 @@
                 <div class="video-links-section" id="videoLinksSection">
                     <h3>📺 虎牙伯千你怎么能留下这样的证据</h3>
                     <div class="video-grid" id="videoGrid"></div>
+                </div>
+
+                <!-- ===== 新增：总结文案模块 ===== -->
+                <div class="summary-section" id="summarySection">
+                    <button class="summary-btn" id="generateSummaryBtn">📋 生成总结</button>
+                    <div class="summary-output" id="summaryOutput">
+                        <div id="summaryText"></div>
+                        <button class="copy-btn" id="copySummaryBtn">📄 复制文案</button>
+                    </div>
                 </div>
             </div>
 
@@ -726,6 +798,12 @@
             const videoGrid = $('videoGrid');
             const resetBtn = $('resetBtn');
 
+            // 新增：总结模块
+            const generateBtn = $('generateSummaryBtn');
+            const summaryOutput = $('summaryOutput');
+            const summaryText = $('summaryText');
+            const copyBtn = $('copySummaryBtn');
+
             // ============================================================
             //  5. 工具
             // ============================================================
@@ -754,6 +832,8 @@
 
                 resultScreen.classList.add('hidden');
                 pkArena.classList.remove('hidden');
+                // 隐藏总结输出
+                summaryOutput.style.display = 'none';
                 startRound();
             }
 
@@ -888,7 +968,6 @@
                 const done = Math.min(matchesDone, total);
                 const pct = Math.round((done / total) * 100);
                 progressFill.style.width = pct + '%';
-                // 更新星星位置（确保不会超出边界）
                 const starLeft = Math.min(pct, 98);
                 starMarker.style.left = starLeft + '%';
 
@@ -912,13 +991,16 @@
                 }
 
                 progressFill.style.width = '100%';
-                starMarker.style.left = '98%';  // 末端留一点边距
+                starMarker.style.left = '98%';
                 progressText.innerHTML = '🏆 已决出冠军！';
-                roundBadge.textContent = '🏆夺冠了！ ';
+                roundBadge.textContent = '夺冠了！ ';
                 roundBadge.classList.add('final');
 
                 renderBracket();
                 renderVideoLinks();
+
+                // 重置总结输出（隐藏）
+                summaryOutput.style.display = 'none';
             }
 
             // ---------- 路径图 ----------
@@ -973,7 +1055,62 @@
             }
 
             // ============================================================
-            //  9. 事件
+            //  9. 新增：总结文案生成与复制
+            // ============================================================
+            function generateSummary() {
+                if (!champ) return;
+                const champNameStr = champ.name || '未知';
+                const runnerUpStr = runnerUp || '无';
+                // 获取冠军的视频链接
+                const champVideo = VIDEO_LINKS[champNameStr] || '暂无视频';
+                const testLink = 'https://www.souaii.com';
+
+                const text = `🏆 我的XP：${champNameStr}\n🥈 亚军：${runnerUpStr}\n💬 视频：${champVideo}\n来测你的：${testLink}`;
+                return text;
+            }
+
+            // 显示总结
+            function showSummary() {
+                const text = generateSummary();
+                if (!text) return;
+                summaryText.textContent = text;
+                summaryOutput.style.display = 'block';
+            }
+
+            // 复制文案
+            function copySummary() {
+                const text = summaryText.textContent;
+                if (!text) return;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        alert('复制好了！(˵>ㅿ<˵)♡');
+                    }).catch(() => {
+                        fallbackCopy(text);
+                    });
+                } else {
+                    fallbackCopy(text);
+                }
+            }
+
+            // 降级复制方案
+            function fallbackCopy(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('₍^˶ ╸𖥦 ╸˵^₎⟆♡复制好了！');
+                } catch (e) {
+                    alert('复制失败，请手动复制。');
+                }
+                document.body.removeChild(textarea);
+            }
+
+            // ============================================================
+            //  10. 事件绑定
             // ============================================================
             cardA.addEventListener('click', function() {
                 const name = nameA.textContent;
@@ -989,8 +1126,12 @@
                 }
             });
 
+            // 新增：生成总结按钮
+            generateBtn.addEventListener('click', showSummary);
+            copyBtn.addEventListener('click', copySummary);
+
             // ============================================================
-            //  10. 启动
+            //  11. 启动
             // ============================================================
             initTournament();
 
